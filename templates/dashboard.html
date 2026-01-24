@@ -46,7 +46,7 @@
                     <p class="welcome-subtitle">Ready to conquer your studies today?</p>
                 </div>
                 <div class="welcome-actions">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="openFocusSessionModal()">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                             <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
@@ -208,6 +208,60 @@
             </div>
         </div>
     </main>
+
+    <!-- Focus Session Modal -->
+    <div id="focusSessionModal" class="modal">
+        <div class="modal-content focus-modal">
+            <div class="modal-header">
+                <h2>Focus Session</h2>
+                <button class="modal-close" onclick="closeFocusSessionModal()">&times;</button>
+            </div>
+
+            <div class="focus-timer-container">
+                <div class="focus-timer-display">
+                    <div class="timer-circle">
+                        <svg viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="90" fill="none" stroke="#E5E7EB" stroke-width="8"/>
+                            <circle id="timerProgress" cx="100" cy="100" r="90" fill="none" stroke="#3bf699" stroke-width="8"
+                                    stroke-dasharray="565" stroke-dashoffset="0" stroke-linecap="round"
+                                    transform="rotate(-90 100 100)" style="transition: stroke-dashoffset 1s linear;"/>
+                        </svg>
+                        <div class="timer-text">
+                            <span id="timerDisplay">00:00:00</span>
+                            <span id="timerSubject" class="timer-subject">General Study</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="focus-controls">
+                    <button id="startPauseBtn" class="btn btn-primary btn-lg" onclick="toggleFocusTimer()">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                            <polygon points="5 3 19 12 5 21 5 3" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+                        </svg>
+                        Start
+                    </button>
+                    <button id="endSessionBtn" class="btn btn-danger btn-lg" onclick="endFocusSession()" style="display: none;">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                            <rect x="6" y="6" width="12" height="12" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+                        </svg>
+                        End Session
+                    </button>
+                </div>
+
+                <div class="focus-subject-selector">
+                    <label for="focusSubject">Subject:</label>
+                    <select id="focusSubject" class="form-select">
+                        <option value="General Study">General Study</option>
+                        <option value="Calculus II">Calculus II</option>
+                        <option value="Linear Algebra">Linear Algebra</option>
+                        <option value="Physics I">Physics I</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Literature">Literature</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="app-footer">

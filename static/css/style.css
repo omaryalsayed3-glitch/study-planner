@@ -6,7 +6,7 @@
 }
 
 :root {
-    --primary-color: #3bf699;
+    --primary-color: #3B82F6;
     --primary-hover: #2563EB;
     --secondary-color: #E8EBF0;
     --text-dark: #1F2937;
@@ -841,6 +841,100 @@ body {
     color: var(--text-gray);
     margin-bottom: 24px;
     font-size: 14px;
+}
+
+/* Focus Session Modal */
+.focus-modal {
+    max-width: 600px;
+}
+
+.focus-timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+}
+
+.focus-timer-display {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.timer-circle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.timer-circle svg {
+    width: 100%;
+    height: 100%;
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#timerDisplay {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-dark);
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-subject {
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.focus-controls {
+    display: flex;
+    gap: 16px;
+}
+
+.focus-subject-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.focus-subject-selector label {
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.form-select {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    background-color: var(--background);
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn-danger {
+    background-color: #EF4444;
+    color: var(--white);
+}
+
+.btn-danger:hover {
+    background-color: #DC2626;
 }
 
 /* Forms */
