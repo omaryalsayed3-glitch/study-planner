@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyFlow AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3B82F6"/>
+                        <path d="M2 17L12 22L22 17" stroke="#3B82F6" stroke-width="2"/>
+                        <path d="M2 12L12 17L22 12" stroke="#3B82F6" stroke-width="2"/>
+                    </svg>
+                    <span class="logo-text">StudyFlow AI</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="/planner" class="nav-link">Planner</a></li>
+                    <li><a href="/progress" class="nav-link">Progress</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="/settings" class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+                        </svg>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div>
+                    <h1 class="welcome-title">Welcome back, Jane Doe!</h1>
+                    <p class="welcome-subtitle">Ready to conquer your studies today?</p>
+                </div>
+                <div class="welcome-actions">
+                    <button class="btn btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Start Focus Session
+                    </button>
+                    <button class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Reschedule Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Today's Study Plan -->
+                <div class="dashboard-card card-large">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <h2>Today's Study Plan</h2>
+                        </div>
+                        <span class="card-date">{{ current_date }}</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="study-sessions">
+                            {% for session in sessions %}
+                            <div class="session-item">
+                                <div class="session-time">
+                                    <span class="time-dot" style="background-color: {% if session.color == 'blue' %}#3B82F6{% elif session.color == 'cyan' %}#06B6D4{% endif %};"></span>
+                                    <span class="time-text">{{ session.time }}</span>
+                                </div>
+                                <div class="session-details">
+                                    <span class="session-subject">{{ session.subject }}</span>
+                                    <span class="session-duration">{{ session.duration }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a href="/planner" class="view-full-link">
+                            View Full Planner
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Upcoming Tasks -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <h2>Upcoming Tasks</h2>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="task-list">
+                            {% for task in tasks %}
+                            <div class="task-item">
+                                <input type="checkbox" id="task-{{ task.id }}" {% if task.completed %}checked{% endif %} class="task-checkbox">
+                                <label for="task-{{ task.id }}" class="task-label">
+                                    <span class="task-title">{{ task.title }}</span>
+                                    <span class="task-due">{{ task.due }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Overview -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 3v18h18" stroke="currentColor" stroke-width="2"/>
+                                <path d="M18 9l-5 5-3-3-4 4" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <h2>Progress Overview</h2>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="progress-circle">
+                            <svg viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#E5E7EB" stroke-width="10"/>
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#3B82F6" stroke-width="10"
+                                        stroke-dasharray="314" stroke-dashoffset="251" stroke-linecap="round"
+                                        transform="rotate(-90 60 60)"/>
+                                <text x="60" y="60" text-anchor="middle" dy=".3em" class="progress-text">20%</text>
+                            </svg>
+                        </div>
+                        <p class="progress-message">1 of 5 tasks completed. Keep up the great work!</p>
+                    </div>
+                </div>
+
+                <!-- Focus Time -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <h2>Focus Time</h2>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="focus-stats">
+                            <div class="focus-stat">
+                                <span class="stat-label">Total focused time:</span>
+                                <span class="stat-value">12h 45m</span>
+                            </div>
+                            <div class="focus-stat">
+                                <span class="stat-label">Average session:</span>
+                                <span class="stat-value">1h 15m</span>
+                            </div>
+                            <div class="focus-stat">
+                                <span class="stat-label">Longest streak:</span>
+                                <span class="stat-value">5 days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div class="dashboard-card card-full">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg class="card-icon" viewBox="0 0 24 24" fill="none">
+                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <h2>AI Recommendations</h2>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="recommendations-list">
+                            {% for recommendation in recommendations %}
+                            <div class="recommendation-item">
+                                <svg class="recommendation-icon" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+                                    <path d="M9 12l2 2 4-4" stroke="#10B981" stroke-width="2"/>
+                                </svg>
+                                <p>{{ recommendation }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <p>&copy; 2026 StudyFlow AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

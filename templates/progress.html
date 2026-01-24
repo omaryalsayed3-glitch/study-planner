@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress - StudyFlow AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3B82F6"/>
+                        <path d="M2 17L12 22L22 17" stroke="#3B82F6" stroke-width="2"/>
+                        <path d="M2 12L12 17L22 12" stroke="#3B82F6" stroke-width="2"/>
+                    </svg>
+                    <span class="logo-text">StudyFlow AI</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                    <li><a href="/planner" class="nav-link">Planner</a></li>
+                    <li><a href="/progress" class="nav-link active">Progress</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="/settings" class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+                        </svg>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="progress-main">
+        <div class="container">
+            <div class="progress-header">
+                <h1 class="page-title">Your Progress Overview</h1>
+                <div class="date-filter">
+                    <input type="date" value="2024-03-01" class="date-input">
+                    <span>-</span>
+                    <input type="date" value="2024-05-31" class="date-input">
+                    <button class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="#3B82F6" stroke-width="2"/>
+                        <path d="M9 12l2 2 4-4" stroke="#3B82F6" stroke-width="2"/>
+                    </svg>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Tasks Completed</div>
+                        <div class="stat-value">185</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="#3B82F6" stroke-width="2"/>
+                    </svg>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Study Hours</div>
+                        <div class="stat-value">240h</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="3" stroke="#3B82F6" stroke-width="2"/>
+                        <path d="M12 1v6m0 6v6M23 12h-6m-6 0H5" stroke="#3B82F6" stroke-width="2"/>
+                    </svg>
+                    <div class="stat-content">
+                        <div class="stat-label">Subjects Actively Studied</div>
+                        <div class="stat-value">8</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <svg class="stat-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#3B82F6" stroke-width="2" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="stat-content">
+                        <div class="stat-label">Current Streak</div>
+                        <div class="stat-value">25 Days</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Task Completion Rate -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Task Completion Rate</h3>
+                    <p class="chart-subtitle">Overall progress of tasks completed vs. total tasks over time.</p>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 400 250" fill="none">
+                            <!-- Bar chart representation -->
+                            <rect x="40" y="180" width="40" height="50" fill="#EF4444" rx="4"/>
+                            <rect x="40" y="130" width="40" height="50" fill="#10B981" rx="4"/>
+
+                            <rect x="100" y="190" width="40" height="40" fill="#EF4444" rx="4"/>
+                            <rect x="100" y="140" width="40" height="50" fill="#10B981" rx="4"/>
+
+                            <rect x="160" y="170" width="40" height="60" fill="#EF4444" rx="4"/>
+                            <rect x="160" y="110" width="40" height="60" fill="#10B981" rx="4"/>
+
+                            <rect x="220" y="180" width="40" height="50" fill="#EF4444" rx="4"/>
+                            <rect x="220" y="90" width="40" height="90" fill="#10B981" rx="4"/>
+
+                            <rect x="280" y="170" width="40" height="60" fill="#EF4444" rx="4"/>
+                            <rect x="280" y="50" width="40" height="120" fill="#10B981" rx="4"/>
+                        </svg>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #10B981;"></span>
+                            <span>Tasks Completed</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #EF4444;"></span>
+                            <span>Total Tasks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Streak -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Study Streak</h3>
+                    <p class="chart-subtitle">Your consistent study days over the last week.</p>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 400 250" fill="none">
+                            <!-- Line chart representation -->
+                            <polyline points="40,180 90,140 140,120 190,100 240,90 290,70 340,60"
+                                      stroke="#3B82F6" stroke-width="3" fill="none"/>
+                            <circle cx="40" cy="180" r="5" fill="#3B82F6"/>
+                            <circle cx="90" cy="140" r="5" fill="#3B82F6"/>
+                            <circle cx="140" cy="120" r="5" fill="#3B82F6"/>
+                            <circle cx="190" cy="100" r="5" fill="#3B82F6"/>
+                            <circle cx="240" cy="90" r="5" fill="#3B82F6"/>
+                            <circle cx="290" cy="70" r="5" fill="#3B82F6"/>
+                            <circle cx="340" cy="60" r="5" fill="#3B82F6"/>
+                        </svg>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #3B82F6;"></span>
+                            <span>Streak Days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject-wise Progress -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Subject-wise Progress</h3>
+                    <p class="chart-subtitle">Distribution of your study progress across different subjects.</p>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#E5E7EB" stroke-width="20"/>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#10B981" stroke-width="20"
+                                    stroke-dasharray="150 502" transform="rotate(-90 100 100)"/>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#EF4444" stroke-width="20"
+                                    stroke-dasharray="125 502" stroke-dashoffset="-150" transform="rotate(-90 100 100)"/>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#3B82F6" stroke-width="20"
+                                    stroke-dasharray="100 502" stroke-dashoffset="-275" transform="rotate(-90 100 100)"/>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#F59E0B" stroke-width="20"
+                                    stroke-dasharray="75 502" stroke-dashoffset="-375" transform="rotate(-90 100 100)"/>
+                        </svg>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #10B981;"></span>
+                            <span>Math</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #EF4444;"></span>
+                            <span>Science</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #3B82F6;"></span>
+                            <span>Literature</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #F59E0B;"></span>
+                            <span>History</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus Session Trends -->
+                <div class="chart-card chart-full">
+                    <h3 class="chart-title">Focus Session Trends</h3>
+                    <p class="chart-subtitle">Average duration of your focused study sessions over months.</p>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 600 250" fill="none">
+                            <!-- Area chart representation -->
+                            <defs>
+                                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#EF9DA6;stop-opacity:0.8" />
+                                    <stop offset="100%" style="stop-color:#EF9DA6;stop-opacity:0.2" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 50,150 L 150,120 L 250,140 L 350,80 L 450,70 L 550,60 L 550,230 L 50,230 Z"
+                                  fill="url(#areaGradient)"/>
+                            <polyline points="50,150 150,120 250,140 350,80 450,70 550,60"
+                                      stroke="#DC2626" stroke-width="3" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background-color: #DC2626;"></span>
+                            <span>Avg. Focus Duration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestones -->
+            <div class="milestones-section">
+                <h2 class="section-title">Your Milestones</h2>
+                <div class="milestones-grid">
+                    <div class="milestone-card">
+                        <svg class="milestone-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#10B981" stroke-width="2"/>
+                            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="#10B981" stroke-width="2"/>
+                        </svg>
+                        <div class="milestone-content">
+                            <h4 class="milestone-title">First 100 Tasks Completed</h4>
+                            <p class="milestone-date">April 15, 2024</p>
+                            <p class="milestone-description">Achieved a major milestone by completing your first 100 study tasks.</p>
+                        </div>
+                        <button class="milestone-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="milestone-card">
+                        <svg class="milestone-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#10B981" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="milestone-content">
+                            <h4 class="milestone-title">Consistent 30-Day Streak</h4>
+                            <p class="milestone-date">May 01, 2024</p>
+                            <p class="milestone-description">Maintained a daily study streak for 30 consecutive days, boosting productivity.</p>
+                        </div>
+                        <button class="milestone-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="milestone-card">
+                        <svg class="milestone-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#9CA3AF" stroke-width="2"/>
+                            <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="#9CA3AF" stroke-width="2"/>
+                        </svg>
+                        <div class="milestone-content">
+                            <h4 class="milestone-title">Complete "Calculus I" Subject</h4>
+                            <p class="milestone-date">June 30, 2024</p>
+                            <p class="milestone-description">Target to complete all modules and practice problems for Calculus I.</p>
+                        </div>
+                        <button class="milestone-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="milestone-card">
+                        <svg class="milestone-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#9CA3AF" stroke-width="2"/>
+                            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="#9CA3AF" stroke-width="2"/>
+                        </svg>
+                        <div class="milestone-content">
+                            <h4 class="milestone-title">Achieve 200 Study Hours</h4>
+                            <p class="milestone-date">July 15, 2024</p>
+                            <p class="milestone-description">Reach a total of 200 dedicated study hours logged in the app.</p>
+                        </div>
+                        <button class="milestone-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <p>&copy; 2026 StudyFlow AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
