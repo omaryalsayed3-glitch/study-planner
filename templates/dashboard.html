@@ -53,12 +53,11 @@
                         </svg>
                         Start Focus Session
                     </button>
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" onclick="openAddSessionModal()">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
-                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-                            <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
                         </svg>
-                        Reschedule Plan
+                        Add New Session
                     </button>
                 </div>
             </div>
@@ -82,7 +81,7 @@
                             {% for session in sessions %}
                             <div class="session-item">
                                 <div class="session-time">
-                                    <span class="time-dot" style="background-color: {% if session.color == 'blue' %}#3B82F6{% elif session.color == 'cyan' %}#06B6D4{% endif %};"></span>
+                                    <span class="time-dot" style="background-color: {% if session.color == 'blue' %}#3B82F6{% elif session.color == 'cyan' %}#06B6D4{% elif session.color == 'green' %}#10B981{% elif session.color == 'yellow' %}#F59E0B{% elif session.color == 'red' %}#EF4444{% else %}#3B82F6{% endif %};"></span>
                                     <span class="time-text">{{ session.time }}</span>
                                 </div>
                                 <div class="session-details">
@@ -177,6 +176,10 @@
                                 <span class="stat-label">Longest streak:</span>
                                 <span class="stat-value">5 days</span>
                             </div>
+                            <div class="focus-stat">
+                                <span class="stat-label">Sessions missed:</span>
+                                <span class="stat-value stat-missed">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -208,6 +211,81 @@
             </div>
         </div>
     </main>
+
+    <!-- Add Session Modal -->
+    <div id="addSessionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Study Session</h2>
+                <button class="modal-close" onclick="closeAddSessionModal()">&times;</button>
+            </div>
+            <p class="modal-description">Plan your next study block, assign subjects, set priorities, and manage your schedule.</p>
+
+            <form class="session-form" onsubmit="handleAddSession(event)">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="calculus">Calculus II</option>
+                        <option value="algebra">Linear Algebra</option>
+                        <option value="physics">Physics I</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="literature">Literature</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sessionDate">Date</label>
+                    <input type="date" id="sessionDate" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="startTime">Start Time</label>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="endTime">End Time</label>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority" required>
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <select id="color" name="color" required>
+                        <option value="blue" selected>Blue (Primary)</option>
+                        <option value="cyan">Cyan</option>
+                        <option value="green">Green</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="red">Red</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Any additional notes for this session"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddSessionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Focus Session Modal -->
     <div id="focusSessionModal" class="modal">

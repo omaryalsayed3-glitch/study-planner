@@ -636,6 +636,10 @@ body {
     color: var(--text-dark);
 }
 
+.stat-missed {
+    color: var(--danger);
+}
+
 /* Recommendations */
 .recommendations-list {
     display: flex;
@@ -774,6 +778,116 @@ body {
             var(--border-color) 60px
         );
     min-height: 1440px;
+    position: relative;
+}
+
+/* Session Block */
+.session-block {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.session-block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.session-block.blue {
+    background-color: #DBEAFE;
+    border-left: 4px solid #3B82F6;
+    color: #1E40AF;
+}
+
+.session-block.cyan {
+    background-color: #CFFAFE;
+    border-left: 4px solid #06B6D4;
+    color: #0E7490;
+}
+
+.session-block.green {
+    background-color: #D1FAE5;
+    border-left: 4px solid #10B981;
+    color: #065F46;
+}
+
+.session-block.yellow {
+    background-color: #FEF3C7;
+    border-left: 4px solid #F59E0B;
+    color: #92400E;
+}
+
+.session-block.red {
+    background-color: #FEE2E2;
+    border-left: 4px solid #EF4444;
+    color: #991B1B;
+}
+
+.session-block-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.session-block-time {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Date Navigation */
+.planner-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-btn {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: var(--background);
+}
+
+.nav-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.current-date {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-dark);
+    min-width: 180px;
+    text-align: center;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 /* Modal */
@@ -985,6 +1099,103 @@ body {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 8px;
+}
+
+/* Focus Summary for Progress Page */
+.focus-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.focus-summary-item {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--background);
+    border-radius: 12px;
+}
+
+.focus-summary-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.focus-summary-label {
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+/* Simple Bar Chart */
+.simple-bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    height: 200px;
+    padding: 20px 0;
+}
+
+.bar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-fill {
+    width: 100%;
+    max-width: 60px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+}
+
+.bar-label {
+    font-size: 12px;
+    color: var(--text-gray);
+}
+
+/* Line Chart Placeholder */
+.line-chart {
+    height: 200px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 20px 0;
+}
+
+.line-point {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.point-bar {
+    width: 4px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+}
+
+.point-label {
+    font-size: 11px;
+    color: var(--text-gray);
+}
+
+/* Donut Chart Container */
+.donut-chart-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.donut-chart-container svg {
+    max-width: 180px;
+    max-height: 180px;
 }
 
 /* Features Page */
