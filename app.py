@@ -96,12 +96,14 @@ def dashboard():
     today_str = get_today()
     formatted_sessions = get_sessions_for_date(today_str)
 
-    # Format tasks with relative due dates
+    # Fetch tasks from database and format with relative due dates
+    tasks = Task.query.filter_by(user_id=1).order_by(Task.due_date).all()
     formatted_tasks = []
-    for task in upcoming_tasks:
+    for task in tasks:
+        task_dict = task.to_dict()
         formatted_tasks.append({
-            **task,
-            'due': format_task_due(task['dueDate'])
+            **task_dict,
+            'due': format_task_due(task_dict['dueDate'])
         })
 
     return render_template('dashboard.html',
