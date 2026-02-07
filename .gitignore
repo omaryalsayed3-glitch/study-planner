@@ -1,0 +1,5 @@
+.env
+.claude/
+study_planner.db
+__pycache__/
+*.pyc

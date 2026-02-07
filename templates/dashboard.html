@@ -77,9 +77,9 @@
                         <span class="card-date">{{ current_date }}</span>
                     </div>
                     <div class="card-content">
-                        <div class="study-sessions">
+                        <div class="study-sessions" id="studySessions">
                             {% for session in sessions %}
-                            <div class="session-item">
+                            <div class="session-item" data-session-id="{{ session.id }}">
                                 <div class="session-time">
                                     <span class="time-dot" style="background-color: {% if session.color == 'blue' %}#3B82F6{% elif session.color == 'cyan' %}#06B6D4{% elif session.color == 'green' %}#10B981{% elif session.color == 'yellow' %}#F59E0B{% elif session.color == 'red' %}#EF4444{% else %}#3B82F6{% endif %};"></span>
                                     <span class="time-text">{{ session.time }}</span>
@@ -87,6 +87,19 @@
                                 <div class="session-details">
                                     <span class="session-subject">{{ session.subject }}</span>
                                     <span class="session-duration">{{ session.duration }}</span>
+                                </div>
+                                <div class="session-actions">
+                                    <button class="session-action-btn" onclick="openRescheduleModal({{ session.id }}, '{{ session.subject }}', '{{ session.startTime }}', '{{ session.endTime }}')" title="Reschedule">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                                            <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </button>
+                                    <button class="session-action-btn cancel-btn" onclick="cancelSession({{ session.id }})" title="Cancel">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                             {% endfor %}
@@ -110,16 +123,27 @@
                             </svg>
                             <h2>Upcoming Tasks</h2>
                         </div>
+                        <button class="btn btn-secondary btn-sm" onclick="openAddTaskModal()">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" style="width: 14px; height: 14px;">
+                                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Add Task
+                        </button>
                     </div>
                     <div class="card-content">
-                        <div class="task-list">
+                        <div class="task-list" id="taskList">
                             {% for task in tasks %}
-                            <div class="task-item">
+                            <div class="task-item" data-task-id="{{ task.id }}">
                                 <input type="checkbox" id="task-{{ task.id }}" {% if task.completed %}checked{% endif %} class="task-checkbox">
                                 <label for="task-{{ task.id }}" class="task-label">
                                     <span class="task-title">{{ task.title }}</span>
                                     <span class="task-due">{{ task.due }}</span>
                                 </label>
+                                <button class="task-delete-btn" onclick="deleteTask({{ task.id }})" title="Delete task">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </button>
                             </div>
                             {% endfor %}
                         </div>
@@ -193,18 +217,19 @@
                             </svg>
                             <h2>AI Recommendations</h2>
                         </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAIRecommendations()" id="refreshAIBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" style="width: 14px; height: 14px;">
+                                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Refresh
+                        </button>
                     </div>
                     <div class="card-content">
-                        <div class="recommendations-list">
-                            {% for recommendation in recommendations %}
-                            <div class="recommendation-item">
-                                <svg class="recommendation-icon" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
-                                    <path d="M9 12l2 2 4-4" stroke="#10B981" stroke-width="2"/>
-                                </svg>
-                                <p>{{ recommendation }}</p>
+                        <div class="recommendations-list" id="aiRecommendations">
+                            <div class="ai-loading">
+                                <div class="loading-spinner"></div>
+                                <p>Getting personalized recommendations...</p>
                             </div>
-                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -338,6 +363,74 @@
                     </select>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Task</h2>
+                <button class="modal-close" onclick="closeAddTaskModal()">&times;</button>
+            </div>
+            <p class="modal-description">Create a new task to track your assignments and deadlines.</p>
+
+            <form class="session-form" onsubmit="handleAddTask(event)">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title</label>
+                    <input type="text" id="taskTitle" name="title" required placeholder="e.g., Complete Chapter 5 exercises">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date</label>
+                    <input type="date" id="taskDueDate" name="dueDate" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reschedule Session Modal -->
+    <div id="rescheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reschedule Session</h2>
+                <button class="modal-close" onclick="closeRescheduleModal()">&times;</button>
+            </div>
+            <p class="modal-description">Change the date and time for this study session.</p>
+
+            <form class="session-form" onsubmit="handleReschedule(event)">
+                <input type="hidden" id="rescheduleSessionId" name="sessionId">
+
+                <div class="form-group">
+                    <label for="rescheduleTitle">Session</label>
+                    <input type="text" id="rescheduleTitle" name="title" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleDate">New Date</label>
+                    <input type="date" id="rescheduleDate" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleStartTime">Start Time</label>
+                    <input type="time" id="rescheduleStartTime" name="startTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleEndTime">End Time</label>
+                    <input type="time" id="rescheduleEndTime" name="endTime" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reschedule</button>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -46,17 +46,15 @@
                 <aside class="settings-sidebar">
                     <nav class="settings-nav">
                         <a href="#general" class="settings-nav-item active">General</a>
-                        <a href="#study-goals" class="settings-nav-item">Study Goals</a>
                         <a href="#subjects" class="settings-nav-item">Subjects</a>
                         <a href="#exam-dates" class="settings-nav-item">Exam Dates</a>
-                        <a href="#notifications" class="settings-nav-item">Notifications</a>
                         <a href="#appearance" class="settings-nav-item">Appearance</a>
                     </nav>
                 </aside>
 
                 <!-- Settings Content -->
                 <div class="settings-content">
-                    <div class="settings-section">
+                    <div id="general" class="settings-section">
                         <h2 class="settings-title">General Settings</h2>
 
                         <form class="settings-form">
@@ -72,6 +70,42 @@
 
                             <button type="submit" class="btn btn-primary">Save Changes</button>
                         </form>
+                    </div>
+
+                    <div id="appearance" class="settings-section">
+                        <h2 class="settings-title">Appearance</h2>
+                        <p class="settings-description">Choose a background color for the app.</p>
+
+                        <div class="color-picker-grid">
+                            <button type="button" class="color-option" data-color="white" title="White">
+                                <span class="color-swatch" style="background-color: #ffffff;"></span>
+                                <span class="color-label">White</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="black" title="Black">
+                                <span class="color-swatch" style="background-color: #1a1a1a;"></span>
+                                <span class="color-label">Black</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="grey" title="Grey">
+                                <span class="color-swatch" style="background-color: #e5e5e5;"></span>
+                                <span class="color-label">Grey</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="pale-blue" title="Pale Blue">
+                                <span class="color-swatch" style="background-color: #e0f2fe;"></span>
+                                <span class="color-label">Pale Blue</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="pale-green" title="Pale Green">
+                                <span class="color-swatch" style="background-color: #dcfce7;"></span>
+                                <span class="color-label">Pale Green</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="pale-pink" title="Pale Pink">
+                                <span class="color-swatch" style="background-color: #fce7f3;"></span>
+                                <span class="color-label">Pale Pink</span>
+                            </button>
+                            <button type="button" class="color-option" data-color="pale-orange" title="Pale Orange">
+                                <span class="color-swatch" style="background-color: #ffedd5;"></span>
+                                <span class="color-label">Pale Orange</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

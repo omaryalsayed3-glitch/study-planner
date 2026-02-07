@@ -184,6 +184,46 @@
         </div>
     </div>
 
+    <!-- Reschedule Session Modal -->
+    <div id="rescheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reschedule Session</h2>
+                <button class="modal-close" onclick="closeRescheduleModal()">&times;</button>
+            </div>
+            <p class="modal-description">Change the date and time for this study session.</p>
+
+            <form class="session-form" onsubmit="handleReschedule(event)">
+                <input type="hidden" id="rescheduleSessionId" name="sessionId">
+
+                <div class="form-group">
+                    <label for="rescheduleTitle">Session</label>
+                    <input type="text" id="rescheduleTitle" name="title" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleDate">New Date</label>
+                    <input type="date" id="rescheduleDate" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleStartTime">Start Time</label>
+                    <input type="time" id="rescheduleStartTime" name="startTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rescheduleEndTime">End Time</label>
+                    <input type="time" id="rescheduleEndTime" name="endTime" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reschedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="app-footer">
         <div class="container">
@@ -193,7 +233,7 @@
 
     <script>
         // Store current date for planner
-        let currentPlannerDate = '{{ current_date }}';
+        window.currentPlannerDate = '{{ current_date }}';
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>

@@ -2,8 +2,13 @@ from flask import Flask, render_template, jsonify, request
 from datetime import datetime, timedelta, date, time as time_type
 from models import db, User, StudySession, Task, FocusSession, CurrentFocusSession
 import os
+from openai import OpenAI
 
 app = Flask(__name__)
+
+# OpenAI configuration
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -45,6 +50,7 @@ def calculate_duration(start_time, end_time):
     start_h, start_m = map(int, start_time.split(':'))
     end_h, end_m = map(int, end_time.split(':'))
     total_minutes = (end_h * 60 + end_m) - (start_h * 60 + start_m)
+    
     hours = total_minutes // 60
     minutes = total_minutes % 60
     if hours == 0:
@@ -476,6 +482,221 @@ def get_current_date():
         'formatted': today.strftime('%B %d, %Y'),
         'dayName': today.strftime('%A')
     })
+
+def get_user_context(user_id=1):
+    """Gather all user data for AI context"""
+    today_date = date.today()
+    now = datetime.now()
+
+    # Get upcoming tasks (next 7 days)
+    upcoming_tasks = Task.query.filter_by(user_id=user_id).filter(
+        Task.due_date >= today_date,
+        Task.due_date <= today_date + timedelta(days=7)
+    ).order_by(Task.due_date).all()
+
+    # Get overdue tasks
+    overdue_tasks = Task.query.filter_by(user_id=user_id, completed=False).filter(
+        Task.due_date < today_date
+    ).all()
+
+    # Get today's study sessions
+    todays_sessions = StudySession.query.filter_by(user_id=user_id, date=today_date).order_by(
+        StudySession.start_time
+    ).all()
+
+    # Get upcoming sessions (next 3 days)
+    upcoming_sessions = StudySession.query.filter_by(user_id=user_id).filter(
+        StudySession.date > today_date,
+        StudySession.date <= today_date + timedelta(days=3)
+    ).order_by(StudySession.date, StudySession.start_time).all()
+
+    # Get recent focus history (last 7 days)
+    recent_focus = FocusSession.query.filter_by(user_id=user_id).filter(
+        FocusSession.date >= today_date - timedelta(days=7)
+    ).all()
+
+    # Calculate study patterns
+    subject_times = {}
+    total_study_minutes = 0
+    for session in recent_focus:
+        subject_times[session.subject] = subject_times.get(session.subject, 0) + session.duration
+        total_study_minutes += session.duration
+
+    # Task completion stats
+    all_tasks = Task.query.filter_by(user_id=user_id).all()
+    completed_tasks = sum(1 for t in all_tasks if t.completed)
+    total_tasks = len(all_tasks)
+
+    context = {
+        'current_datetime': now.strftime('%A, %B %d, %Y at %I:%M %p'),
+        'upcoming_tasks': [
+            {
+                'title': t.title,
+                'due_date': t.due_date.strftime('%A, %B %d'),
+                'days_until': (t.due_date - today_date).days,
+                'completed': t.completed
+            } for t in upcoming_tasks
+        ],
+        'overdue_tasks': [
+            {
+                'title': t.title,
+                'due_date': t.due_date.strftime('%B %d'),
+                'days_overdue': (today_date - t.due_date).days
+            } for t in overdue_tasks
+        ],
+        'todays_sessions': [
+            {
+                'title': s.title,
+                'subject': s.subject,
+                'start_time': s.start_time.strftime('%I:%M %p'),
+                'end_time': s.end_time.strftime('%I:%M %p'),
+                'priority': s.priority
+            } for s in todays_sessions
+        ],
+        'upcoming_sessions': [
+            {
+                'title': s.title,
+                'subject': s.subject,
+                'date': s.date.strftime('%A, %B %d'),
+                'start_time': s.start_time.strftime('%I:%M %p'),
+                'end_time': s.end_time.strftime('%I:%M %p')
+            } for s in upcoming_sessions
+        ],
+        'study_patterns': {
+            'total_minutes_last_7_days': total_study_minutes,
+            'total_hours_last_7_days': round(total_study_minutes / 60, 1),
+            'subject_breakdown': subject_times,
+            'average_daily_minutes': round(total_study_minutes / 7, 1)
+        },
+        'task_stats': {
+            'completed': completed_tasks,
+            'total': total_tasks,
+            'completion_rate': round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+        },
+        'streak': calculate_longest_streak_db(user_id)
+    }
+
+    return context
+
+@app.route('/api/ai/recommendations', methods=['GET'])
+def get_ai_recommendations():
+    """Generate personalized AI recommendations using OpenAI"""
+    try:
+        # Get user context
+        context = get_user_context(user_id=1)
+
+        # Build the prompt
+        system_prompt = """You are a helpful study assistant for a student using a study planner app.
+Your job is to provide personalized, actionable study recommendations based on their current tasks,
+scheduled sessions, and study patterns.
+
+Be encouraging but practical. Focus on:
+1. Time management and scheduling advice
+2. Task prioritization based on due dates
+3. Study technique suggestions for different subjects
+4. Reminders about upcoming deadlines or sessions
+5. Suggestions for balancing workload across subjects
+
+Keep each recommendation concise (1-2 sentences). Be specific to their actual data.
+Return exactly 4-5 recommendations as a JSON array of strings."""
+
+        user_prompt = f"""Here is the student's current study data:
+
+**Current Date/Time:** {context['current_datetime']}
+
+**Today's Scheduled Sessions:**
+{format_sessions_for_prompt(context['todays_sessions'])}
+
+**Upcoming Tasks (Next 7 Days):**
+{format_tasks_for_prompt(context['upcoming_tasks'])}
+
+**Overdue Tasks:**
+{format_overdue_for_prompt(context['overdue_tasks'])}
+
+**Upcoming Sessions (Next 3 Days):**
+{format_upcoming_sessions_for_prompt(context['upcoming_sessions'])}
+
+**Study Patterns (Last 7 Days):**
+- Total study time: {context['study_patterns']['total_hours_last_7_days']} hours
+- Average daily: {context['study_patterns']['average_daily_minutes']} minutes
+- Subject breakdown: {context['study_patterns']['subject_breakdown']}
+- Current streak: {context['streak']} days
+
+**Task Completion:** {context['task_stats']['completed']}/{context['task_stats']['total']} ({context['task_stats']['completion_rate']}%)
+
+Based on this data, provide 4-5 personalized study recommendations. Return as a JSON array of strings."""
+
+        # Call OpenAI API
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=500
+        )
+
+        # Parse the response
+        content = response.choices[0].message.content.strip()
+
+        # Try to extract JSON from the response
+        import json
+        try:
+            # Remove markdown code blocks if present
+            if content.startswith('```'):
+                content = content.split('```')[1]
+                if content.startswith('json'):
+                    content = content[4:]
+            recommendations = json.loads(content)
+        except json.JSONDecodeError:
+            # Fallback: split by newlines and clean up
+            lines = [line.strip() for line in content.split('\n') if line.strip()]
+            recommendations = [line.lstrip('0123456789.-) ') for line in lines if len(line) > 10][:5]
+
+        return jsonify({
+            'success': True,
+            'recommendations': recommendations,
+            'context_summary': {
+                'tasks_due_soon': len(context['upcoming_tasks']),
+                'overdue_tasks': len(context['overdue_tasks']),
+                'sessions_today': len(context['todays_sessions']),
+                'study_hours_this_week': context['study_patterns']['total_hours_last_7_days']
+            }
+        })
+
+    except Exception as e:
+        # Fallback to default recommendations on error
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'recommendations': [
+                "Review your upcoming tasks and prioritize based on due dates.",
+                "Consider scheduling focused study blocks for challenging subjects.",
+                "Take regular breaks using the Pomodoro technique (25 min work, 5 min break).",
+                "Try active recall techniques like flashcards for better retention.",
+                "Make sure to get adequate sleep before exams for optimal performance."
+            ]
+        })
+
+def format_sessions_for_prompt(sessions):
+    if not sessions:
+        return "No sessions scheduled for today."
+    return "\n".join([f"- {s['title']} ({s['start_time']} - {s['end_time']}, {s['priority']} priority)" for s in sessions])
+
+def format_tasks_for_prompt(tasks):
+    if not tasks:
+        return "No upcoming tasks."
+    return "\n".join([f"- {t['title']} (due {t['due_date']}, {t['days_until']} days left, {'completed' if t['completed'] else 'pending'})" for t in tasks])
+
+def format_overdue_for_prompt(tasks):
+    if not tasks:
+        return "No overdue tasks."
+    return "\n".join([f"- {t['title']} ({t['days_overdue']} days overdue)" for t in tasks])
+
+def format_upcoming_sessions_for_prompt(sessions):
+    if not sessions:
+        return "No upcoming sessions."
+    return "\n".join([f"- {s['title']} on {s['date']} ({s['start_time']} - {s['end_time']})" for s in sessions])
 
 def calculate_longest_streak_db(user_id):
     """Calculate longest streak using database queries"""

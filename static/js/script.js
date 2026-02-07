@@ -20,9 +20,23 @@ function getTodayDate() {
 }
 
 function addDays(dateStr, days) {
-    const date = new Date(dateStr + 'T00:00:00');
+    const date = new Date(dateStr + 'T12:00:00'); // Use noon to avoid timezone edge cases
     date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
+    // Get local date components instead of UTC
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeJs(str) {
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
 // ============= Planner Functions =============
@@ -75,15 +89,28 @@ function createSessionBlock(session) {
         return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
     };
 
-    block.innerHTML = `
-        <div class="session-block-title">${session.title}</div>
-        <div class="session-block-time">${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}</div>
-    `;
+    const safeTitle = escapeJs(session.title);
+    const displayTitle = escapeHtml(session.title);
 
-    block.onclick = () => {
-        // Could open edit modal here
-        console.log('Session clicked:', session);
-    };
+    block.innerHTML = `
+        <div class="session-block-content">
+            <div class="session-block-title">${displayTitle}</div>
+            <div class="session-block-time">${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}</div>
+        </div>
+        <div class="session-block-actions">
+            <button class="session-block-btn" onclick="event.stopPropagation(); openRescheduleModal(${session.id}, '${safeTitle}', '${session.startTime}', '${session.endTime}')" title="Reschedule">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </button>
+            <button class="session-block-btn cancel-btn" onclick="event.stopPropagation(); cancelSession(${session.id})" title="Cancel">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </button>
+        </div>
+    `;
 
     return block;
 }
@@ -207,7 +234,7 @@ function loadTodaysSessions() {
     fetch('/api/sessions/formatted')
         .then(response => response.json())
         .then(sessions => {
-            const sessionsContainer = document.querySelector('.study-sessions');
+            const sessionsContainer = document.getElementById('studySessions');
             if (!sessionsContainer) return;
 
             if (sessions.length === 0) {
@@ -224,16 +251,31 @@ function loadTodaysSessions() {
                     'red': '#EF4444'
                 };
                 const dotColor = colorMap[session.color] || '#3B82F6';
+                const safeSubject = escapeJs(session.subject);
+                const displaySubject = escapeHtml(session.subject);
 
                 return `
-                    <div class="session-item">
+                    <div class="session-item" data-session-id="${session.id}">
                         <div class="session-time">
                             <span class="time-dot" style="background-color: ${dotColor};"></span>
-                            <span class="time-text">${session.time}</span>
+                            <span class="time-text">${escapeHtml(session.time)}</span>
                         </div>
                         <div class="session-details">
-                            <span class="session-subject">${session.subject}</span>
-                            <span class="session-duration">${session.duration}</span>
+                            <span class="session-subject">${displaySubject}</span>
+                            <span class="session-duration">${escapeHtml(session.duration)}</span>
+                        </div>
+                        <div class="session-actions">
+                            <button class="session-action-btn" onclick="openRescheduleModal(${session.id}, '${safeSubject}', '${session.startTime}', '${session.endTime}')" title="Reschedule">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                            <button class="session-action-btn cancel-btn" onclick="cancelSession(${session.id})" title="Cancel">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -468,19 +510,127 @@ function updateDashboardStats() {
         .catch(error => console.error('Error updating stats:', error));
 }
 
+// ============= AI Recommendations =============
+function loadAIRecommendations() {
+    const container = document.getElementById('aiRecommendations');
+    if (!container) return;
+
+    // Show loading state
+    container.innerHTML = `
+        <div class="ai-loading">
+            <div class="loading-spinner"></div>
+            <p>Getting personalized recommendations...</p>
+        </div>
+    `;
+
+    // Disable refresh button while loading
+    const refreshBtn = document.getElementById('refreshAIBtn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.style.opacity = '0.6';
+    }
+
+    fetch('/api/ai/recommendations')
+        .then(response => response.json())
+        .then(data => {
+            if (data.recommendations && data.recommendations.length > 0) {
+                container.innerHTML = data.recommendations.map(rec => `
+                    <div class="recommendation-item">
+                        <svg class="recommendation-icon" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+                            <path d="M9 12l2 2 4-4" stroke="#10B981" stroke-width="2"/>
+                        </svg>
+                        <p>${escapeHtml(rec)}</p>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="ai-error">
+                        <svg viewBox="0 0 24 24" fill="none" style="width: 20px; height: 20px; flex-shrink: 0;">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Unable to generate recommendations. Please try again.</span>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading AI recommendations:', error);
+            container.innerHTML = `
+                <div class="ai-error">
+                    <svg viewBox="0 0 24 24" fill="none" style="width: 20px; height: 20px; flex-shrink: 0;">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Error connecting to AI service. Please try again later.</span>
+                </div>
+            `;
+        })
+        .finally(() => {
+            // Re-enable refresh button
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.style.opacity = '1';
+            }
+        });
+}
+
 function updateProgressCircle(percentage) {
     const progressText = document.querySelector('.progress-text');
     const progressCircle = document.querySelector('.progress-circle svg circle:nth-child(2)');
 
-    if (progressText) {
+    if (progressText && progressCircle) {
+        animateProgressSmooth(progressText, progressCircle, percentage);
+    } else if (progressText) {
         animateProgress(progressText, percentage);
     }
+}
 
-    if (progressCircle) {
-        const circumference = 2 * Math.PI * 50;
-        const offset = circumference * (1 - percentage / 100);
-        progressCircle.style.strokeDashoffset = offset;
+function animateProgressSmooth(textElement, circleElement, targetPercentage) {
+    // Get current percentage from element (don't start from 0)
+    const currentText = textElement.textContent.replace('%', '');
+    let currentPercentage = parseInt(currentText) || 0;
+
+    // If we're already at target, just set it
+    if (currentPercentage === targetPercentage) {
+        textElement.textContent = targetPercentage + '%';
+        return;
     }
+
+    const circumference = 2 * Math.PI * 50;
+    const duration = 800; // Animation duration in ms
+    const startTime = performance.now();
+    const startPercentage = currentPercentage;
+    const diff = targetPercentage - startPercentage;
+
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function for smooth animation (ease-out)
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        const currentValue = startPercentage + (diff * easeOut);
+
+        // Update text
+        textElement.textContent = Math.round(currentValue) + '%';
+
+        // Update circle - both animate together
+        const offset = circumference * (1 - currentValue / 100);
+        circleElement.style.strokeDashoffset = offset;
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            // Ensure we end at exact target
+            textElement.textContent = targetPercentage + '%';
+            const finalOffset = circumference * (1 - targetPercentage / 100);
+            circleElement.style.strokeDashoffset = finalOffset;
+        }
+    }
+
+    requestAnimationFrame(animate);
 }
 
 function animateProgress(element, targetPercentage) {
@@ -536,6 +686,218 @@ function setupTaskHandlers() {
                 this.checked = !this.checked;
             });
         });
+    });
+}
+
+// ============= Add Task Modal =============
+function openAddTaskModal() {
+    const modal = document.getElementById('addTaskModal');
+    if (modal) {
+        modal.classList.add('active');
+
+        // Set default due date to today
+        const dueDateInput = document.getElementById('taskDueDate');
+        if (dueDateInput) {
+            dueDateInput.value = getTodayDate();
+        }
+    }
+}
+
+function closeAddTaskModal() {
+    const modal = document.getElementById('addTaskModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function handleAddTask(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const taskData = {
+        title: formData.get('title'),
+        dueDate: formData.get('dueDate')
+    };
+
+    fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Task added:', data);
+        closeAddTaskModal();
+
+        // Reload tasks
+        loadTasks();
+        updateDashboardStats();
+
+        // Clear the form
+        event.target.reset();
+    })
+    .catch(error => {
+        console.error('Error adding task:', error);
+        alert('Error adding task. Please try again.');
+    });
+}
+
+function deleteTask(taskId) {
+    if (!confirm('Are you sure you want to delete this task?')) {
+        return;
+    }
+
+    fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Task deleted:', data);
+
+        // Remove task from DOM
+        const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+        if (taskItem) {
+            taskItem.remove();
+        }
+
+        updateDashboardStats();
+    })
+    .catch(error => {
+        console.error('Error deleting task:', error);
+        alert('Error deleting task. Please try again.');
+    });
+}
+
+function loadTasks() {
+    fetch('/api/tasks')
+        .then(response => response.json())
+        .then(tasks => {
+            const taskList = document.getElementById('taskList');
+            if (!taskList) return;
+
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<p style="color: var(--text-gray); text-align: center;">No tasks yet. Add one above!</p>';
+                return;
+            }
+
+            taskList.innerHTML = tasks.map(task => `
+                <div class="task-item" data-task-id="${task.id}">
+                    <input type="checkbox" id="task-${task.id}" ${task.completed ? 'checked' : ''} class="task-checkbox">
+                    <label for="task-${task.id}" class="task-label">
+                        <span class="task-title">${escapeHtml(task.title)}</span>
+                        <span class="task-due">${escapeHtml(task.due)}</span>
+                    </label>
+                    <button class="task-delete-btn" onclick="deleteTask(${task.id})" title="Delete task">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+
+            // Re-attach event handlers
+            setupTaskHandlers();
+        })
+        .catch(error => console.error('Error loading tasks:', error));
+}
+
+// ============= Reschedule Modal =============
+function openRescheduleModal(sessionId, title, startTime, endTime) {
+    const modal = document.getElementById('rescheduleModal');
+    if (modal) {
+        modal.classList.add('active');
+
+        document.getElementById('rescheduleSessionId').value = sessionId;
+        document.getElementById('rescheduleTitle').value = title;
+        document.getElementById('rescheduleDate').value = currentPlannerDate || getTodayDate();
+        document.getElementById('rescheduleStartTime').value = startTime;
+        document.getElementById('rescheduleEndTime').value = endTime;
+    }
+}
+
+function closeRescheduleModal() {
+    const modal = document.getElementById('rescheduleModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function handleReschedule(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const sessionId = formData.get('sessionId');
+    const rescheduleData = {
+        date: formData.get('date'),
+        startTime: formData.get('startTime'),
+        endTime: formData.get('endTime')
+    };
+
+    // Validate times
+    if (rescheduleData.startTime >= rescheduleData.endTime) {
+        alert('End time must be after start time');
+        return;
+    }
+
+    fetch(`/api/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(rescheduleData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Session rescheduled:', data);
+        closeRescheduleModal();
+
+        // Reload sessions based on current page
+        if (document.getElementById('scheduleGrid')) {
+            loadPlannerSessions(currentPlannerDate);
+        }
+
+        if (window.location.pathname === '/dashboard') {
+            loadTodaysSessions();
+        }
+    })
+    .catch(error => {
+        console.error('Error rescheduling session:', error);
+        alert('Error rescheduling session. Please try again.');
+    });
+}
+
+function cancelSession(sessionId) {
+    if (!confirm('Are you sure you want to cancel this study session?')) {
+        return;
+    }
+
+    fetch(`/api/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Session cancelled:', data);
+
+        // Reload sessions based on current page
+        if (document.getElementById('scheduleGrid')) {
+            loadPlannerSessions(currentPlannerDate);
+        }
+
+        if (window.location.pathname === '/dashboard') {
+            loadTodaysSessions();
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling session:', error);
+        alert('Error cancelling session. Please try again.');
     });
 }
 
@@ -741,6 +1103,8 @@ function applyDateFilter() {
 window.addEventListener('click', function(event) {
     const addSessionModal = document.getElementById('addSessionModal');
     const focusModal = document.getElementById('focusSessionModal');
+    const addTaskModal = document.getElementById('addTaskModal');
+    const rescheduleModal = document.getElementById('rescheduleModal');
 
     if (event.target === addSessionModal) {
         closeAddSessionModal();
@@ -755,6 +1119,14 @@ window.addEventListener('click', function(event) {
             }
         }
     }
+
+    if (event.target === addTaskModal) {
+        closeAddTaskModal();
+    }
+
+    if (event.target === rescheduleModal) {
+        closeRescheduleModal();
+    }
 });
 
 // ============= Settings Navigation =============
@@ -766,8 +1138,67 @@ function setupSettingsNav() {
             e.preventDefault();
             settingsNavItems.forEach(nav => nav.classList.remove('active'));
             this.classList.add('active');
+
+            // Scroll to section
+            const targetId = this.getAttribute('href').substring(1);
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     });
+}
+
+// ============= Theme Color Picker =============
+function setupColorPicker() {
+    const colorOptions = document.querySelectorAll('.color-option');
+
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const color = this.dataset.color;
+            setThemeColor(color);
+
+            // Update active state
+            colorOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Load saved theme on init
+    const savedTheme = localStorage.getItem('themeColor') || 'white';
+    setThemeColor(savedTheme);
+
+    // Mark the active color option
+    const activeOption = document.querySelector(`.color-option[data-color="${savedTheme}"]`);
+    if (activeOption) {
+        activeOption.classList.add('active');
+    }
+}
+
+function setThemeColor(color) {
+    // Remove all theme classes
+    document.body.classList.remove(
+        'theme-white',
+        'theme-black',
+        'theme-grey',
+        'theme-pale-blue',
+        'theme-pale-green',
+        'theme-pale-pink',
+        'theme-pale-orange'
+    );
+
+    // Add new theme class
+    document.body.classList.add(`theme-${color}`);
+
+    // Save to localStorage
+    localStorage.setItem('themeColor', color);
+}
+
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('themeColor');
+    if (savedTheme) {
+        setThemeColor(savedTheme);
+    }
 }
 
 // ============= View Toggle =============
@@ -787,6 +1218,8 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const focusModal = document.getElementById('focusSessionModal');
         const addSessionModal = document.getElementById('addSessionModal');
+        const addTaskModal = document.getElementById('addTaskModal');
+        const rescheduleModal = document.getElementById('rescheduleModal');
 
         if (focusModal && focusModal.classList.contains('active')) {
             closeFocusSessionModal();
@@ -795,23 +1228,57 @@ document.addEventListener('keydown', function(e) {
         if (addSessionModal && addSessionModal.classList.contains('active')) {
             closeAddSessionModal();
         }
+
+        if (addTaskModal && addTaskModal.classList.contains('active')) {
+            closeAddTaskModal();
+        }
+
+        if (rescheduleModal && rescheduleModal.classList.contains('active')) {
+            closeRescheduleModal();
+        }
     }
 });
+
+// ============= Expose functions to window for onclick handlers =============
+window.loadAIRecommendations = loadAIRecommendations;
+window.openAddSessionModal = openAddSessionModal;
+window.closeAddSessionModal = closeAddSessionModal;
+window.handleAddSession = handleAddSession;
+window.openFocusSessionModal = openFocusSessionModal;
+window.closeFocusSessionModal = closeFocusSessionModal;
+window.toggleFocusTimer = toggleFocusTimer;
+window.endFocusSession = endFocusSession;
+window.openAddTaskModal = openAddTaskModal;
+window.closeAddTaskModal = closeAddTaskModal;
+window.handleAddTask = handleAddTask;
+window.deleteTask = deleteTask;
+window.openRescheduleModal = openRescheduleModal;
+window.closeRescheduleModal = closeRescheduleModal;
+window.handleReschedule = handleReschedule;
+window.cancelSession = cancelSession;
+window.changeDate = changeDate;
+window.goToToday = goToToday;
+window.applyDateFilter = applyDateFilter;
 
 // ============= Initialization =============
 document.addEventListener('DOMContentLoaded', function() {
     console.log('StudyFlow AI loaded successfully');
 
+    // Load saved theme immediately
+    loadSavedTheme();
+
     // Setup event handlers
     setupTaskHandlers();
     setupSettingsNav();
     setupViewToggle();
+    setupColorPicker();
 
     // Initialize based on current page
     const path = window.location.pathname;
 
     if (path === '/dashboard') {
         updateDashboardStats();
+        loadAIRecommendations();
     }
 
     if (path === '/planner') {
